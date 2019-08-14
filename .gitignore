@@ -103,5 +103,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-#MAC
+# MAC
 .DS_Store
+
+# vscode
+.vscode
