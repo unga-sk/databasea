@@ -8,10 +8,14 @@ from pathlib import Path
 if __name__ == "__main__":
     os.chdir('./migrations')
 
-    lastFile = sorted(glob.glob('*'))[-1][0:-4].split('_')[0]
-    lastIncrement = lastFile.split('.')[-1]
-    lastDate = lastFile.split('.')[-2]
-    lastPrefix = '.'.join(lastFile.split('.')[0:-2])
+    if len(glob.glob('*')) > 0:
+        lastFile = sorted(glob.glob('*'))[-1][0:-4].split('_')[0]
+        lastIncrement = lastFile.split('.')[-1]
+        lastDate = lastFile.split('.')[-2]
+        lastPrefix = '.'.join(lastFile.split('.')[0:-2])
+    else:
+        lastDate = ''
+        lastPrefix = ''
 
     prefix = input('Enter file prefix (default {}) - optional: '.format(lastPrefix)) or lastPrefix
     if prefix != '':

@@ -35,11 +35,18 @@ if __name__ == "__main__":
                 trans = conn.begin()
                 conn.execute('CREATE TABLE public.db_version ("migration" TEXT PRIMARY KEY, "timestamp" TIMESTAMPTZ DEFAULT NOW(), "user" TEXT DEFAULT CURRENT_USER)')
                 trans.commit()
-            
-            executedMigrations = conn.execute('SELECT "migration" FROM public.db_version ORDER BY "migration"').fetchall()
         
+        elif engine.dialect.name == 'mssql':
+            defaultSchema = 'dbo'
+            if len(conn.execute('SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = \'dbo\' AND TABLE_NAME = \'db_version\'').fetchall()) == 0:
+                trans = conn.begin()
+                conn.execute('CREATE TABLE dbo.db_version ("migration" NVARCHAR(250) PRIMARY KEY, "timestamp" DATETIME DEFAULT CURRENT_TIMESTAMP, "user" NVARCHAR(MAX) DEFAULT CURRENT_USER)')
+                trans.commit()
+
         else:
             raise Exception('UNSUPPORTED DATABASE DIALECT')
+
+        executedMigrations = conn.execute('SELECT "migration" FROM {}.db_version ORDER BY "migration"'.format(defaultSchema)).fetchall()
 
         executedMigrations = [migration[0] for migration in executedMigrations]
         
