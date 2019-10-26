@@ -65,7 +65,6 @@ if __name__ == "__main__":
             if 'recreate_matviews' in migration:
                 doRecreateMatviews = True
             else:
-                trans = conn.begin()
                 executeSqlFile('./migrations/{}'.format(migration),conn)
 
             conn.execute('INSERT INTO {}.db_version ("migration", "user") values (\'{}\', \'{}\')'.format(defaultSchema, migration, engine.url.translate_connect_args()['username']))
