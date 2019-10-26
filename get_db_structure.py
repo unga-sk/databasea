@@ -45,14 +45,14 @@ if __name__ == "__main__":
             print('Exporting table definition of {}.{}'.format(table[0], table[1]))
             if not os.path.exists('./structure/tables/{}'.format(table[0])):
                 os.makedirs('./structure/tables/{}'.format(table[0]))
-            command = 'pg_dump {0} -t \'{1}.{2}\' --schema-only > ./structure/tables/{1}/{2}.sql'.format(os.getenv('CONNECTION_URL'), table[0], table[1])
+            command = 'pg_dump {0} -t \'{1}.{2}\' --schema-only --no-owner --no-privileges > ./structure/tables/{1}/{2}.sql'.format(os.getenv('CONNECTION_URL'), table[0], table[1])
             os.system(command)
 
         for matview in matviews:
             print('Exporting matview definition of {}.{}'.format(matview[0], matview[1]))
             if not os.path.exists('./structure/mat-views/{}'.format(matview[0])):
                 os.makedirs('./structure/mat-views/{}'.format(matview[0]))
-            command = 'pg_dump {0} -t \'{1}.{2}\' --schema-only > ./structure/mat-views/{1}/{2}.sql'.format(os.getenv('CONNECTION_URL'), matview[0], matview[1])
+            command = 'pg_dump {0} -t \'{1}.{2}\' --schema-only --no-owner --no-privileges > ./structure/mat-views/{1}/{2}.sql'.format(os.getenv('CONNECTION_URL'), matview[0], matview[1])
             os.system(command)
 
     except Exception as e:

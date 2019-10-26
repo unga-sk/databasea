@@ -18,6 +18,8 @@ def executeSqlFile(path, conn):
 
 if __name__ == "__main__":
 
+    doRecreateMatviews = False
+
     print('Migrating database {}'.format( os.getenv('CONNECTION_URL').split('@')[1]) )
 
     print('Connecting to database ...')
@@ -58,15 +60,20 @@ if __name__ == "__main__":
 
         for migration in unappliedMigrations:
             print('Applying migration {}'.format(migration))
-            
+            trans = conn.begin()
+
             if 'recreate_matviews' in migration:
-                if engine.dialect.name == 'postgresql':
-                    recreateMatviews.postgres.recreateMatviews(conn)
+                doRecreateMatviews = True
             else:
                 trans = conn.begin()
                 executeSqlFile('./migrations/{}'.format(migration),conn)
-                conn.execute('INSERT INTO {}.db_version ("migration", "user") values (\'{}\', \'{}\')'.format(defaultSchema, migration, engine.url.translate_connect_args()['username']))
-                trans.commit()
+
+            conn.execute('INSERT INTO {}.db_version ("migration", "user") values (\'{}\', \'{}\')'.format(defaultSchema, migration, engine.url.translate_connect_args()['username']))
+            trans.commit()
+
+        if doRecreateMatviews:
+            if engine.dialect.name == 'postgresql':
+                    recreateMatviews.postgres.recreateMatviews(conn)
 
         print('Applying repeatable scripts ...')
         maintenanceSqls = glob.glob('./repeatable/*')
@@ -85,6 +92,7 @@ if __name__ == "__main__":
             trans.rollback()
         except:
             pass
+        conn.close()
         raise e
 
     conn.close()
