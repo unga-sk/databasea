@@ -64,6 +64,8 @@ if __name__ == "__main__":
 
             if 'recreate_matviews' in migration:
                 doRecreateMatviews = True
+                if engine.dialect.name == 'postgresql':
+                    recreateMatviews.postgres.recreateMatviews(conn)
             else:
                 executeSqlFile('./migrations/{}'.format(migration),conn)
 
@@ -72,7 +74,7 @@ if __name__ == "__main__":
 
         if doRecreateMatviews:
             if engine.dialect.name == 'postgresql':
-                    recreateMatviews.postgres.recreateMatviews(conn)
+                    recreateMatviews.postgres.populateMatviews(conn)
 
         print('Applying repeatable scripts ...')
         maintenanceSqls = glob.glob('./repeatable/*')
