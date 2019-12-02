@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(
-	name='databese-devutil',
+	name='databasea',
 	author='Milan Munko',
 	scripts=['get_db_structure.py',
 		'patch_database.py',
