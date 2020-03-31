@@ -23,6 +23,10 @@ if __name__ == "__main__":
     doRecreateMatviews = False
 
     print('Migrating database {}'.format( os.getenv('CONNECTION_URL').split('@')[1]) )
+    
+    resp = input('Should I continue? [Y/n]: ')
+    if resp not in ('','y','Y'):
+        exit(0)
 
     print('Connecting to database ...')
 
