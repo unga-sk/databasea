@@ -5,8 +5,11 @@ from distutils.core import setup
 setup(
 	name='databasea',
 	author='Milan Munko',
-	scripts=['get_db_structure.py',
+	scripts=[
+		'get_db_structure.py',
 		'patch_database.py',
-		'create_migration.py'],
+		'create_migration.py',
+		'databasea_init.py'
+		],
 	packages=['_recreate_matviews']
 )
