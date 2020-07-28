@@ -9,7 +9,8 @@ setup(
 		'get_db_structure.py',
 		'patch_database.py',
 		'create_migration.py',
-		'databasea_init.py'
+		'databasea_init.py',
+		'helper_functions.py'
 		],
 	packages=['_recreate_matviews']
 )

@@ -2,6 +2,7 @@
 
 from dotenv import load_dotenv
 import os
+import argparse
 
 if os.path.isfile('.env'):
     load_dotenv(dotenv_path='.env')
@@ -11,6 +12,7 @@ import glob
 import subprocess
 
 import _recreate_matviews as recreateMatviews
+from helper_functions import getFilesFromDirTree
 
 def executeSqlFile(path, conn):
     file=open(path)
@@ -20,13 +22,18 @@ def executeSqlFile(path, conn):
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-y', action='store_true', help='Do not prompt for connection approval')
+    args = parser.parse_args()
+
     doRecreateMatviews = False
 
     print('Migrating database {}'.format( os.getenv('CONNECTION_URL').split('@')[1]) )
     
-    resp = input('Should I continue? [Y/n]: ')
-    if resp not in ('','y','Y'):
-        exit(0)
+    if not args.y :
+        resp = input('Should I continue? [Y/n]: ')
+        if resp not in ('','y','Y'):
+            exit(0)
 
     print('Connecting to database ...')
 
@@ -58,8 +65,7 @@ if __name__ == "__main__":
 
         executedMigrations = [migration[0] for migration in executedMigrations]
         
-        migrations = glob.glob('./migrations/*')
-        migrations = [migration.split('/')[-1] for migration in migrations]
+        migrations = getFilesFromDirTree('./migrations')
 
         unappliedMigrations = list(set(migrations) - set(executedMigrations))
         unappliedMigrations.sort()
@@ -73,8 +79,8 @@ if __name__ == "__main__":
                 if engine.dialect.name == 'postgresql':
                     recreateMatviews.postgres.recreateMatviews(conn)
             else:
-                executeSqlFile('./migrations/{}'.format(migration),conn)
-
+                if migration.rsplit('.',1)[1] == 'sql': executeSqlFile(migration,conn)
+                
             conn.execute('INSERT INTO {}.db_version ("migration", "user") values (\'{}\', \'{}\')'.format(defaultSchema, migration, engine.url.translate_connect_args()['username']))
             trans.commit()
 
@@ -89,7 +95,7 @@ if __name__ == "__main__":
         for maintenanceSql in maintenanceSqls:
             print('Applying {}'.format(maintenanceSql.split('/')[-1]))
             trans = conn.begin()
-            executeSqlFile(maintenanceSql, conn)
+            if maintenanceSql.rsplit('.',1)[1] == 'sql': executeSqlFile(maintenanceSql,conn)
             trans.commit()
 
         print('Done.')

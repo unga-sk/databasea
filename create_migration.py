@@ -4,31 +4,46 @@ import os
 import glob
 import time
 from pathlib import Path
+from helper_functions import getFilesFromDirTree
 
 if __name__ == "__main__":
-    os.chdir('./migrations')
+    try:
+        os.chdir('./migrations')
 
-    if len(glob.glob('*')) > 0:
-        lastFile = sorted(glob.glob('*'))[-1][0:-4].split('_')[0]
-        lastIncrement = lastFile.split('.')[-1]
-        lastDate = lastFile.split('.')[-2]
-        lastPrefix = '.'.join(lastFile.split('.')[0:-2])
-    else:
-        lastDate = ''
-        lastPrefix = ''
+        migrationFiles = getFilesFromDirTree('./')
 
-    prefix = input('Enter file prefix (default {}) - optional: '.format(lastPrefix)) or lastPrefix
-    if prefix != '':
-        prefix = '{}.'.format(prefix)
-    
-    suffix = input('Enter file suffix - optional: ')
-    if suffix != '':
-        suffix = '_{}'.format(suffix)
+        if len(migrationFiles) > 0:
+            try:
+                lastFile = sorted(migrationFiles)[-1]
+                lastFileName = lastFile.rsplit('/',1)[-1][0:-4].split('_')[0]
+                lastIncrement = lastFileName.split('.')[-1]
+                lastDate = lastFileName.split('.')[-2]
+                lastPrefix = lastFile.rsplit('/',1)[0] + '/' + '.'.join(lastFileName.split('.')[0:-2])
+            except:
+                lastDate = ''
+                lastPrefix = ''
+        else:
+            lastDate = ''
+            lastPrefix = ''
 
-    date = time.strftime('%y%m%d', time.localtime())
+        prefix = input('Enter file prefix (default {}) - optional: '.format(lastPrefix)) or lastPrefix
+        if prefix != '' and prefix[-1] != '/':
+            prefix = '{}.'.format(prefix)
+        
+        suffix = input('Enter file suffix - optional: ')
+        if suffix != '':
+            suffix = '_{}'.format(suffix)
 
-    increment = str(int(lastIncrement)+1).zfill(3) if lastDate == date else '001'
+        date = time.strftime('%y%m%d', time.localtime())
 
-    fileName = '{}{}.{}{}.sql'.format(prefix, date, increment, suffix)
+        increment = str(int(lastIncrement)+1).zfill(3) if lastDate == date else '001'
 
-    Path(fileName).touch()
+        fileName = '{}{}.{}{}.sql'.format(prefix, date, increment, suffix)
+
+        if not os.path.exists(fileName.rsplit('/',1)[0]) and '/' in fileName:
+            os.makedirs(fileName.rsplit('/',1)[0])
+
+        Path(fileName).touch()
+
+    except KeyboardInterrupt:
+        pass
